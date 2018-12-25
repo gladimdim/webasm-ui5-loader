@@ -3,20 +3,40 @@ sap.ui.define([
 	"sap/ui/model/json/JSONModel",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator"
-], function(Controller, JSONModel, Filter, FilterOperator) {
+], function (Controller, JSONModel, Filter, FilterOperator) {
 	'use strict';
-
+	var oModel = null;
 	return Controller.extend('sap.ui.demo.todo.controller.App', {
 
-		onInit: function() {
+		onInit: function () {
 			this.aSearchFilters = [];
 			this.aTabFilters = [];
+
+			fetch('./wasm_math_bg.wasm')
+				.then(response =>
+					response.arrayBuffer()
+				)
+				.then(bytes => WebAssembly.instantiate(bytes))
+				.then(results => {
+					var instance = results.instance;
+					var functions = {
+						"wasmFunctions": Object.keys(instance.exports).map(fnName => {
+							return {
+								value: instance.exports[fnName],
+								name: fnName
+							};
+						})
+					};
+					oModel = new JSONModel(functions);
+					this.getView().setModel(oModel, "Functions")
+				})
+				.catch(console.error);
 		},
 
 		/**
 		 * Adds a new todo item to the bottom of the list.
 		 */
-		addTodo: function() {
+		addTodo: function () {
 			var oModel = this.getView().getModel();
 			var aTodos = jQuery.extend(true, [], oModel.getProperty('/todos'));
 
@@ -32,7 +52,7 @@ sap.ui.define([
 		/**
 		 * Removes all completed items from the todo list.
 		 */
-		clearCompleted: function() {
+		clearCompleted: function () {
 			var oModel = this.getView().getModel();
 			var aTodos = jQuery.extend(true, [], oModel.getProperty('/todos'));
 
@@ -50,11 +70,11 @@ sap.ui.define([
 		/**
 		 * Updates the number of items not yet completed
 		 */
-		updateItemsLeftCount: function() {
+		updateItemsLeftCount: function () {
 			var oModel = this.getView().getModel();
 			var aTodos = oModel.getProperty('/todos') || [];
 
-			var iItemsLeft = aTodos.filter(function(oTodo) {
+			var iItemsLeft = aTodos.filter(function (oTodo) {
 				return oTodo.completed !== true;
 			}).length;
 
@@ -65,7 +85,7 @@ sap.ui.define([
 		 * Trigger search for specific items. The removal of items is disable as long as the search is used.
 		 * @param {sap.ui.base.Event} oEvent Input changed event
 		 */
-		onSearch: function(oEvent) {
+		onSearch: function (oEvent) {
 			var oModel = this.getView().getModel();
 
 			// First reset current filters
@@ -84,7 +104,7 @@ sap.ui.define([
 			this._applyListFilters();
 		},
 
-		onFilter: function(oEvent) {
+		onFilter: function (oEvent) {
 
 			// First reset current filters
 			this.aTabFilters = [];
@@ -94,21 +114,21 @@ sap.ui.define([
 
 			// eslint-disable-line default-case
 			switch (sFilterKey) {
-				case "active":
-					this.aTabFilters.push(new Filter("completed", FilterOperator.EQ, false));
-					break;
-				case "completed":
-					this.aTabFilters.push(new Filter("completed", FilterOperator.EQ, true));
-					break;
-				case "all":
-				default:
-					// Don't use any filter
+			case "active":
+				this.aTabFilters.push(new Filter("completed", FilterOperator.EQ, false));
+				break;
+			case "completed":
+				this.aTabFilters.push(new Filter("completed", FilterOperator.EQ, true));
+				break;
+			case "all":
+			default:
+				// Don't use any filter
 			}
 
 			this._applyListFilters();
 		},
 
-		_applyListFilters: function() {
+		_applyListFilters: function () {
 			var oList = this.byId("todoList");
 			var oBinding = oList.getBinding("items");
 
