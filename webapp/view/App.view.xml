@@ -1,7 +1,7 @@
-<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" controllerName="sap.ui.demo.todo.controller.App" displayBlock="true">
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" controllerName="com.gladimdim.webasmloader.controller.App" displayBlock="true">
 	<Shell>
 		<App>
-			<Page title="{i18n>TITLE}" backgroundDesign="Solid">
+			<Page title="{i18n>title}" backgroundDesign="Solid">
 				<subHeader>
 					<Toolbar>
 						<SearchField id="searchTodoItemsInput" liveChange="onSearch" width="100%"/>

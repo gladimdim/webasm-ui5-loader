@@ -6,7 +6,7 @@ sap.ui.define([
 ], function (Controller, JSONModel, Filter, FilterOperator) {
 	'use strict';
 	var oModel = null;
-	return Controller.extend('sap.ui.demo.todo.controller.App', {
+	return Controller.extend('com.gladimdim.webasmloader.controller.App', {
 
 		onInit: function () {
 			this.aSearchFilters = [];
