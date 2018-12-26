@@ -59,9 +59,6 @@
         "resources": {
             "css": [{
                 "uri": "css/style.css"
-            }],
-            "js": [{
-                "uri": "/libs/libwabt.js"
             }]
         },
         "routing": {

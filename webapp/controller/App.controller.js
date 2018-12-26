@@ -7,6 +7,7 @@ sap.ui.define([
     'use strict';
     var oModel = null;
     var b = null;
+    var webAssemblyModule = null;
     return Controller.extend('com.gladimdim.webasmloader.controller.App', {
         onInit: function() {
             this.aSearchFilters = [];
@@ -22,41 +23,32 @@ sap.ui.define([
                 })
                 .then(results => {
                     var instance = results.instance;
+                    webAssemblyModule = instance;
+                    var ast = _webassemblyjs_wasmParser.decode(b);
+                    var exportedFunctions = ast.body[0].fields.filter(f => f.name !== "memory" && f.type ===
+                        "ModuleExport").map(f => f.name);
+                    var functionsMeta = ast.body[0].fields.filter(f => {
+                    	if (f.type === "Func" && exportedFunctions.indexOf(f.name.value) >= 0) {
+                    		return true;
+                    	} else {
+                    		return false;
+                    	}
+                    });
+
                     var functions = {
-                        "wasmFunctions": Object.keys(instance.exports)
-                            .map(fnName => {
+                        "wasmFunctions": functionsMeta.map(exportedFn => {
                                 return {
-                                    value: instance.exports[fnName],
-                                    name: fnName
+                                    exec: instance.exports[exportedFn.name.value],
+                                    name: exportedFn.name.value,
+                                    arguments: exportedFn.signature.params,
+                                    results: exportedFn.signature.results[0]
                                 };
                             })
                     };
                     oModel = new JSONModel(functions);
                     this.getView()
                         .setModel(oModel, "Functions");
-
-                    WabtModule()
-                        .then(function(wabt) {
-                            try {
-                                var module = wabt.readWasm(b, {
-                                    readDebugNames: true
-                                });
-
-                                module.generateNames();
-                                module.applyNames();
-
-                                var result =
-                                    module.toText({
-                                        foldExprs: true,
-                                        inlineExport: true
-                                    });
-                                debugger;
-                            } catch (e) {
-                            	console.error(e);
-                            }
-                        });
-                })
-                .catch(console.error);
+                });
         },
 
         /**
