@@ -10,7 +10,14 @@
 				<content>
 					<List noDataText="Drop list items here" id="list0" items="{path: 'Functions>/wasmFunctions'}">
 						<items>
-							<ObjectListItem type="Active" title="{Functions>name}" id="functionId"/>
+							<ObjectListItem title="{Functions>name}" type="Active" press="onListItemPress">
+								<firstStatus>
+									<ObjectStatus text="{Functions>results}" state="Success"/>
+								</firstStatus>
+								<attributes>
+									<ObjectAttribute text="{Functions>results}"/>
+								</attributes>
+							</ObjectListItem>
 						</items>
 					</List>
 				</content>
