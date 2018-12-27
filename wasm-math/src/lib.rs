@@ -25,3 +25,8 @@ pub fn add_two(a: i32, b: i32) -> i32 {
 pub fn multiply_by(a: i32, b: i32) -> i32 {
     a * b
 }
+
+#[wasm_bindgen]
+pub fn sum_array(input: Vec<u32>) -> u32 {
+    input.iter().sum()
+}
