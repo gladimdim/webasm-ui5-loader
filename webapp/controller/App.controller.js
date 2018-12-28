@@ -8,6 +8,7 @@ sap.ui.define([
     var oModel = null;
     var b = null;
     var webAssemblyModule = null;
+    var functionsMeta = null;
     return Controller.extend('com.gladimdim.webasmloader.controller.App', {
         onInit: function() {
             this.aSearchFilters = [];
@@ -18,27 +19,25 @@ sap.ui.define([
                     response.arrayBuffer()
                 )
                 .then(bytes => {
-                    b = bytes;
-                    return WebAssembly.instantiate(bytes);
-                })
-                .then(results => {
-                    var instance = results.instance;
-                    webAssemblyModule = instance;
-                    var ast = _webassemblyjs_wasmParser.decode(b);
+                    var ast = _webassemblyjs_wasmParser.decode(bytes);
                     var exportedFunctions = ast.body[0].fields.filter(f => f.name !== "memory" && f.type ===
                         "ModuleExport").map(f => f.name);
-                    var functionsMeta = ast.body[0].fields.filter(f => {
+                    functionsMeta = ast.body[0].fields.filter(f => {
                     	if (f.type === "Func" && exportedFunctions.indexOf(f.name.value) >= 0) {
                     		return true;
                     	} else {
                     		return false;
                     	}
                     });
-
+                    return WebAssembly.instantiate(bytes);
+                })
+                .then(results => {
+                    webAssemblyModule = results.instance;
+                    
                     var functions = {
                         "wasmFunctions": functionsMeta.map(exportedFn => {
                                 return {
-                                    exec: instance.exports[exportedFn.name.value],
+                                    exec: webAssemblyModule.exports[exportedFn.name.value],
                                     name: exportedFn.name.value,
                                     arguments: exportedFn.signature.params,
                                     results: exportedFn.signature.results[0]
